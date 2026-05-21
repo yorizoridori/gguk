@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>GGUK 꾹</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Jua&family=Noto+Sans+KR:wght@400;700&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #FFF8F0;
+      --primary: #FF6B6B;
+      --accent: #FFD93D;
+      --green: #6BCB77;
+      --blue: #4D96FF;
+      --purple: #C77DFF;
+      --dark: #3D2B1F;
+      --card-bg: #FFFFFF;
+      --shadow: 0 4px 20px rgba(0,0,0,0.10);
+    }
+
+    body {
+      font-family: 'Jua', 'Noto Sans KR', sans-serif;
+      background: var(--bg);
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+      touch-action: manipulation;
+    }
+
+    #root {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100dvh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ── SCREEN BASE ── */
+    .screen {
+      width: 100%;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 20px 40px;
+      animation: fadeIn 0.35s ease;
+    }
+    @keyframes fadeIn { from { opacity:0; transform: translateY(12px); } to { opacity:1; transform: none; } }
+
+    /* ── SCREEN 1: CHARACTER SELECT ── */
+    .select-tagline {
+      margin-top: 48px;
+      font-size: 0.78rem;
+      color: #c0b0a8;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+      letter-spacing: 0.2px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .select-title {
+      margin-top: 6px;
+      font-size: 2.4rem;
+      color: var(--primary);
+      letter-spacing: -1px;
+      text-shadow: 3px 3px 0 #FFD93D;
+    }
+    .select-subtitle {
+      margin-top: 8px;
+      font-size: 1rem;
+      color: #999;
+      letter-spacing: 0.5px;
+    }
+    .char-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 32px;
+      width: 100%;
+    }
+    .char-card {
+      background: var(--card-bg);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 20px 12px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .char-card:active { transform: scale(0.94); }
+    .char-card.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 4px rgba(255,107,107,0.18), var(--shadow);
+    }
+    .char-card svg { width: 90px; height: 90px; }
+    .char-name {
+      margin-top: 10px;
+      font-size: 1.05rem;
+      color: var(--dark);
+    }
+    .char-desc {
+      font-size: 0.78rem;
+      color: #aaa;
+      margin-top: 2px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+    }
+    .btn-primary {
+      margin-top: 28px;
+      width: 100%;
+      padding: 18px;
+      background: var(--primary);
+      color: white;
+      font-family: 'Jua', sans-serif;
+      font-size: 1.25rem;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      box-shadow: 0 6px 0 #e05555;
+      transition: transform 0.1s, box-shadow 0.1s;
+      -webkit-tap-highlight-color: transparent;
+      letter-spacing: 1px;
+    }
+    .btn-primary:active { transform: translateY(4px); box-shadow: 0 2px 0 #e05555; }
+    .btn-primary:disabled { background: #ddd; box-shadow: 0 6px 0 #bbb; cursor: default; }
+
+    /* ── SCREEN 2: NICKNAME ── */
+    .nickname-screen {
+      justify-content: center;
+      gap: 0;
+    }
+    .nickname-char-preview {
+      margin-top: 20px;
+    }
+    .nickname-char-preview svg { width: 140px; height: 140px; }
+    .nickname-label {
+      margin-top: 24px;
+      font-size: 1.4rem;
+      color: var(--dark);
+    }
+    .nickname-hint {
+      font-size: 0.85rem;
+      color: #bbb;
+      margin-top: 4px;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+    }
+    .nickname-input {
+      margin-top: 20px;
+      width: 100%;
+      padding: 18px 20px;
+      font-family: 'Jua', sans-serif;
+      font-size: 1.3rem;
+      border: 3px solid #eee;
+      border-radius: 18px;
+      background: #fff;
+      color: var(--dark);
+      outline: none;
+      text-align: center;
+      transition: border-color 0.2s;
+    }
+    .nickname-input:focus { border-color: var(--primary); }
+
+    /* ── SCREEN 3: MAIN GAME ── */
+    .game-screen {
+      padding: 0;
+      background: linear-gradient(180deg, #fff9f0 0%, #ffeedd 100%);
+      position: relative;
+    }
+    .game-header {
+      width: 100%;
+      padding: 20px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .game-nickname {
+      font-size: 1.1rem;
+      color: var(--dark);
+      background: white;
+      padding: 6px 16px;
+      border-radius: 40px;
+      box-shadow: var(--shadow);
+    }
+    .game-stage-badge {
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 40px;
+      background: white;
+      box-shadow: var(--shadow);
+      color: #888;
+    }
+
+    .counter-area {
+      margin-top: 16px;
+      text-align: center;
+    }
+    .counter-number {
+      font-size: 3.8rem;
+      color: var(--primary);
+      line-height: 1;
+      text-shadow: 3px 3px 0 #FFD93D;
+      transition: transform 0.1s;
+    }
+    .counter-number.pop { animation: numPop 0.2s ease; }
+    @keyframes numPop {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+      100% { transform: scale(1); }
+    }
+    .counter-label {
+      font-size: 0.9rem;
+      color: #bbb;
+      margin-top: 2px;
+    }
+
+    .char-stage-bar {
+      display: flex;
+      gap: 6px;
+      margin-top: 10px;
+      justify-content: center;
+    }
+    .stage-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: #eee;
+      transition: background 0.3s;
+    }
+    .stage-dot.active { background: var(--primary); }
+
+    .char-tap-area {
+      position: relative;
+      margin-top: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      width: 100%;
+      flex: 1;
+    }
+    .char-tap-area svg {
+      width: min(300px, 80vw);
+      height: min(300px, 80vw);
+      filter: drop-shadow(0 12px 24px rgba(0,0,0,0.12));
+      transition: transform 0.08s;
+    }
+    .char-tap-area.hit svg { animation: charHit 0.25s ease; }
+    @keyframes charHit {
+      0%   { transform: scale(1) rotate(0deg); }
+      25%  { transform: scale(0.88) rotate(-4deg); }
+      60%  { transform: scale(1.06) rotate(2deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+    .char-tap-area.shake svg { animation: charShake 0.3s ease; }
+    @keyframes charShake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-8px) rotate(-3deg); }
+      40% { transform: translateX(8px) rotate(3deg); }
+      60% { transform: translateX(-6px) rotate(-2deg); }
+      80% { transform: translateX(6px) rotate(2deg); }
+    }
+
+    /* floating effects */
+    .effect-particle {
+      position: absolute;
+      pointer-events: none;
+      font-size: 1.6rem;
+      animation: floatUp 0.8s ease forwards;
+      z-index: 10;
+    }
+    @keyframes floatUp {
+      0%   { opacity: 1; transform: translateY(0) scale(1) rotate(0deg); }
+      100% { opacity: 0; transform: translateY(-90px) scale(1.4) rotate(20deg); }
+    }
+    .effect-ring {
+      position: absolute;
+      border-radius: 50%;
+      border: 4px solid var(--primary);
+      animation: ringOut 0.5s ease forwards;
+      pointer-events: none;
+    }
+    @keyframes ringOut {
+      0%   { opacity: 0.7; width: 40px; height: 40px; margin: -20px 0 0 -20px; }
+      100% { opacity: 0; width: 200px; height: 200px; margin: -100px 0 0 -100px; }
+    }
+
+    .message-toast {
+      position: absolute;
+      bottom: 120px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--dark);
+      color: white;
+      padding: 10px 22px;
+      border-radius: 40px;
+      font-size: 1rem;
+      white-space: nowrap;
+      animation: toastIn 2s ease forwards;
+      z-index: 20;
+      pointer-events: none;
+    }
+    @keyframes toastIn {
+      0%   { opacity: 0; transform: translateX(-50%) translateY(10px); }
+      15%  { opacity: 1; transform: translateX(-50%) translateY(0); }
+      75%  { opacity: 1; }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+    }
+
+    .game-bottom {
+      width: 100%;
+      padding: 16px 24px 32px;
+      text-align: center;
+    }
+    .tap-hint {
+      font-size: 0.95rem;
+      color: #ccc;
+      letter-spacing: 1px;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+    /* ── SHARE SHEET ── */
+    .share-sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 20px 40px;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.14);
+      z-index: 40;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.34,1.45,0.64,1);
+    }
+    .share-sheet.open { transform: translateY(0); }
+    .share-sheet-handle {
+      width: 40px; height: 4px;
+      background: #eee; border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .share-sheet-title {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--dark);
+      margin-bottom: 16px;
+    }
+    .share-preview-wrap {
+      width: 100%;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+      background: #f8f0e8;
+      min-height: 120px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .share-preview-wrap img {
+      width: 100%;
+      display: block;
+    }
+    .share-loading-text {
+      color: #ccc;
+      font-size: 1rem;
+      padding: 48px 0;
+      text-align: center;
+      animation: pulse 1.2s infinite;
+    }
+    .share-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 14px;
+    }
+    .share-btn {
+      flex: 1;
+      padding: 14px;
+      border: none;
+      border-radius: 16px;
+      font-family: 'Jua', sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s;
+    }
+    .share-btn:active { transform: scale(0.96); }
+    .share-btn.save {
+      background: var(--primary);
+      color: white;
+      box-shadow: 0 4px 0 #e05555;
+    }
+    .share-btn.save:active { box-shadow: 0 1px 0 #e05555; transform: translateY(3px); }
+    .share-btn.native {
+      background: #F0F4FF;
+      color: #4D96FF;
+      box-shadow: 0 4px 0 #c8d8ff;
+    }
+    .share-btn.native:active { box-shadow: 0 1px 0 #c8d8ff; transform: translateY(3px); }
+    .share-close {
+      width: 100%;
+      margin-top: 10px;
+      padding: 10px;
+      background: none;
+      border: 2px solid #eee;
+      border-radius: 14px;
+      font-family: 'Jua', sans-serif;
+      font-size: 0.9rem;
+      color: #bbb;
+      cursor: pointer;
+    }
+    /* share btn in game footer */
+    .game-share-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      padding: 10px 24px;
+      background: linear-gradient(135deg, #FFD93D, #FF9F43);
+      color: white;
+      font-family: 'Jua', sans-serif;
+      font-size: 0.95rem;
+      border: none;
+      border-radius: 40px;
+      cursor: pointer;
+      box-shadow: 0 4px 0 #e08c20;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s;
+    }
+    .game-share-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #e08c20; }
+
+    /* ── DAMAGE OVERLAY EFFECTS ── */
+    .damage-marks {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      pointer-events: none;
+    }
+
+    /* ── HEAL PANEL ── */
+    .heal-toggle-btn {
+      position: absolute;
+      bottom: 100px;
+      right: 16px;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FFD93D, #FF6B6B);
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      box-shadow: 0 4px 14px rgba(255,107,107,0.4);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 30;
+      transition: transform 0.15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .heal-toggle-btn:active { transform: scale(0.9); }
+
+    .heal-panel {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 20px 36px;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.12);
+      z-index: 40;
+      transform: translateY(100%);
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1);
+    }
+    .heal-panel.open { transform: translateY(0); }
+
+    .heal-panel-handle {
+      width: 40px; height: 4px;
+      background: #eee;
+      border-radius: 2px;
+      margin: 0 auto 16px;
+    }
+    .heal-panel-title {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--dark);
+      margin-bottom: 4px;
+    }
+    .heal-panel-subtitle {
+      text-align: center;
+      font-size: 0.8rem;
+      color: #bbb;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+      margin-bottom: 18px;
+    }
+    .heal-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .heal-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 14px 18px;
+      border-radius: 18px;
+      border: 2.5px solid transparent;
+      cursor: pointer;
+      font-family: 'Jua', sans-serif;
+      font-size: 1rem;
+      transition: transform 0.12s, opacity 0.15s;
+      -webkit-tap-highlight-color: transparent;
+      text-align: left;
+      background: #fafafa;
+    }
+    .heal-btn:active { transform: scale(0.97); }
+    .heal-btn:disabled { opacity: 0.35; cursor: default; }
+    .heal-btn.pet   { border-color: #FFD93D; }
+    .heal-btn.sew   { border-color: #4D96FF; }
+    .heal-btn.full  { border-color: #6BCB77; }
+    .heal-btn-icon  { font-size: 1.8rem; flex-shrink: 0; }
+    .heal-btn-body  { flex: 1; }
+    .heal-btn-name  { font-size: 1.05rem; color: var(--dark); }
+    .heal-btn-desc  { font-size: 0.78rem; color: #aaa;
+                      font-family:'Noto Sans KR',sans-serif; font-weight:400; margin-top:1px; }
+    .heal-btn-cost  {
+      font-size: 0.88rem;
+      font-family: 'Jua', sans-serif;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: #fff0f0;
+      color: var(--primary);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .heal-btn.pet  .heal-btn-cost { background:#fffbe0; color:#c8960c; }
+    .heal-btn.sew  .heal-btn-cost { background:#e8f0ff; color:#2563eb; }
+    .heal-btn.full .heal-btn-cost { background:#e8fbe8; color:#2a7a2a; }
+
+    .heal-overlay {
+      position: absolute;
+      inset: 0;
+      z-index: 39;
+      background: transparent;
+    }
+
+    /* ── HEAL ANIMATION OVERLAY ── */
+    .heal-flash {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 50;
+      animation: healFlash 0.7s ease forwards;
+    }
+    @keyframes healFlash {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    .heal-particle {
+      position: absolute;
+      pointer-events: none;
+      font-size: 1.8rem;
+      z-index: 55;
+      animation: healFloat var(--dur, 1s) ease forwards;
+    }
+    @keyframes healFloat {
+      0%   { opacity:1; transform: translateY(0) scale(0.6) rotate(0deg); }
+      40%  { opacity:1; transform: translateY(-50px) scale(1.2) rotate(15deg); }
+      100% { opacity:0; transform: translateY(-110px) scale(0.9) rotate(-10deg); }
+    }
+
+    .heal-bloom {
+      position: absolute;
+      left: 50%; top: 50%;
+      width: 10px; height: 10px;
+      margin: -5px 0 0 -5px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 52;
+      animation: bloomOut 0.8s ease forwards;
+    }
+    @keyframes bloomOut {
+      0%   { opacity:0.9; transform: scale(1); }
+      100% { opacity:0;   transform: scale(30); }
+    }
+
+    .heal-char-bounce svg {
+      animation: charHeal 0.6s cubic-bezier(0.34,1.8,0.64,1) forwards !important;
+    }
+    @keyframes charHeal {
+      0%   { transform: scale(1) rotate(0deg); }
+      30%  { transform: scale(0.82) rotate(-6deg); }
+      65%  { transform: scale(1.18) rotate(4deg); }
+      85%  { transform: scale(0.95) rotate(-1deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    /* stage dots go green when healing */
+    .stage-dot.healed { background: var(--green) !important;
+      animation: dotPop 0.4s ease; }
+    @keyframes dotPop {
+      0%,100% { transform:scale(1); }
+      50%      { transform:scale(1.6); }
+    }
+
+    .counter-heal { animation: countHeal 0.5s ease; }
+    @keyframes countHeal {
+      0%  { transform:scale(1);    color: var(--primary); }
+      50% { transform:scale(1.25); color: #6BCB77; }
+      100%{ transform:scale(1);    color: var(--primary); }
+    }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script type="text/babel">
+const { useState, useEffect, useRef, useCallback } = React;
+
+/* ═══════════════════════════════════════════
+   SVG CHARACTERS
+═══════════════════════════════════════════ */
+
+// 표정 helpers
+function Eyes({ expr, cx1=62, cy1=72, cx2=98, cy2=72, r=7 }) {
+  if (expr === 'surprised') return <>
+    <circle cx={cx1} cy={cy1} r={r+3} fill="#fff" stroke="#3D2B1F" strokeWidth="2.5"/>
+    <circle cx={cx1+1} cy={cy1+1} r={r} fill="#3D2B1F"/>
+    <circle cx={cx2} cy={cy2} r={r+3} fill="#fff" stroke="#3D2B1F" strokeWidth="2.5"/>
+    <circle cx={cx2+1} cy={cy2+1} r={r} fill="#3D2B1F"/>
+  </>;
+  if (expr === 'pain') return <>
+    <text x={cx1-6} y={cy1+5} fontSize="16" fontWeight="bold" fill="#3D2B1F">T</text>
+    <text x={cx2-6} y={cy2+5} fontSize="16" fontWeight="bold" fill="#3D2B1F">T</text>
+    <path d={`M${cx1-6},${cy1+8} Q${cx1},${cy1+14} ${cx1+6},${cy1+8}`} stroke="#4D96FF" strokeWidth="1.5" fill="none"/>
+    <path d={`M${cx2-6},${cy2+8} Q${cx2},${cy2+14} ${cx2+6},${cy2+8}`} stroke="#4D96FF" strokeWidth="1.5" fill="none"/>
+  </>;
+  if (expr === 'dizzy') return <>
+    <text x={cx1-8} y={cy1+6} fontSize="17" fill="#3D2B1F">×</text>
+    <text x={cx2-8} y={cy2+6} fontSize="17" fill="#3D2B1F">×</text>
+  </>;
+  if (expr === 'angry') return <>
+    <line x1={cx1-8} y1={cy1-6} x2={cx1+6} y2={cy1-1} stroke="#3D2B1F" strokeWidth="3" strokeLinecap="round"/>
+    <circle cx={cx1} cy={cy1+2} r={r-1} fill="#3D2B1F"/>
+    <line x1={cx2-6} y1={cy2-6} x2={cx2+8} y2={cy2-1} stroke="#3D2B1F" strokeWidth="3" strokeLinecap="round"/>
+    <circle cx={cx2} cy={cy2+2} r={r-1} fill="#3D2B1F"/>
+  </>;
+  // normal
+  return <>
+    <circle cx={cx1} cy={cy1} r={r} fill="#3D2B1F"/>
+    <circle cx={cx1+2} cy={cy1-2} r={2.5} fill="white"/>
+    <circle cx={cx2} cy={cy2} r={r} fill="#3D2B1F"/>
+    <circle cx={cx2+2} cy={cy2-2} r={2.5} fill="white"/>
+  </>;
+}
+
+function Mouth({ expr, mx=80, my=97 }) {
+  if (expr === 'surprised') return <ellipse cx={mx} cy={my+4} rx={9} ry={11} fill="#3D2B1F"/>;
+  if (expr === 'pain') return <path d={`M${mx-10},${my+6} Q${mx},${my} ${mx+10},${my+6}`} stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>;
+  if (expr === 'dizzy') return <path d={`M${mx-10},${my+2} Q${mx-4},${my-4} ${mx},${my+2} Q${mx+4},${my+8} ${mx+10},${my+4}`} stroke="#3D2B1F" strokeWidth="2.5" fill="none" strokeLinecap="round"/>;
+  if (expr === 'angry') return <path d={`M${mx-10},${my+4} Q${mx},${my-4} ${mx+10},${my+4}`} stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>;
+  return <path d={`M${mx-10},${my} Q${mx},${my+12} ${mx+10},${my}`} stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>;
+}
+
+function DamageScars({ stage, color }) {
+  if (stage === 0) return null;
+  return <>
+    {stage >= 1 && <line x1="100" y1="50" x2="112" y2="66" stroke={color} strokeWidth="3" strokeLinecap="round" opacity="0.7"/>}
+    {stage >= 2 && <>
+      <line x1="45" y1="80" x2="55" y2="100" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.6"/>
+      <circle cx={110} cy={110} r={4} fill="none" stroke={color} strokeWidth="2" opacity="0.5"/>
+    </>}
+    {stage >= 3 && <>
+      <line x1="70" y1="120" x2="60" y2="138" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+      <path d="M90,135 L96,142 L90,149" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+    </>}
+    {stage >= 4 && <>
+      <line x1="55" y1="55" x2="65" y2="70" stroke={color} strokeWidth="3" strokeLinecap="round" opacity="0.8"/>
+      <line x1="115" y1="130" x2="125" y2="115" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+      <line x1="40" y1="110" x2="52" y2="105" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+      <path d="M78,58 L84,50 L90,58" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
+    </>}
+  </>;
+}
+
+// ── 곰돌이
+function BearSVG({ expr='normal', stage=0 }) {
+  const tilt = stage >= 3 ? 'rotate(-6,80,80)' : stage >= 4 ? 'rotate(-10,80,80)' : '';
+  return (
+    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+      <g transform={tilt}>
+        {/* ears */}
+        <circle cx="38" cy="50" r="22" fill="#C68642"/>
+        <circle cx="122" cy="50" r="22" fill="#C68642"/>
+        <circle cx="38" cy="50" r="13" fill="#E8967A"/>
+        <circle cx="122" cy="50" r="13" fill="#E8967A"/>
+        {/* head */}
+        <ellipse cx="80" cy="90" rx="52" ry="50" fill="#C68642"/>
+        {/* face patch */}
+        <ellipse cx="80" cy="102" rx="28" ry="22" fill="#E8967A"/>
+        {/* eyes */}
+        <Eyes expr={expr} cx1={63} cy1={80} cx2={97} cy2={80}/>
+        {/* nose */}
+        <ellipse cx="80" cy="96" rx="8" ry="5" fill="#3D2B1F"/>
+        <Mouth expr={expr} mx={80} my={105}/>
+        {/* cheeks */}
+        {(expr === 'normal' || expr === 'surprised') && <>
+          <circle cx="52" cy="95" r="10" fill="#FFAA88" opacity="0.5"/>
+          <circle cx="108" cy="95" r="10" fill="#FFAA88" opacity="0.5"/>
+        </>}
+        <DamageScars stage={stage} color="#8B5A2B"/>
+      </g>
+    </svg>
+  );
+}
+
+// ── 소파 쿠션
+function CushionSVG({ expr='normal', stage=0 }) {
+  const colors = ['#FF8FAB','#FF6B9D','#E05B8A','#C24A72','#A33060'];
+  const c = colors[Math.min(stage, 4)];
+  return (
+    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+      {/* main cushion body */}
+      <rect x="18" y="28" width="124" height="108" rx="30" fill={c}/>
+      {/* stitching border */}
+      <rect x="26" y="36" width="108" height="92" rx="22" fill="none" stroke="white" strokeWidth="2.5" strokeDasharray="6 4" opacity="0.5"/>
+      {/* corner tufts */}
+      <circle cx="38" cy="48" r="7" fill="white" opacity="0.3"/>
+      <circle cx="122" cy="48" r="7" fill="white" opacity="0.3"/>
+      <circle cx="38" cy="118" r="7" fill="white" opacity="0.3"/>
+      <circle cx="122" cy="118" r="7" fill="white" opacity="0.3"/>
+      {/* center button */}
+      <circle cx="80" cy="82" r="14" fill="white" opacity="0.25"/>
+      <circle cx="80" cy="82" r="8" fill="white" opacity="0.4"/>
+      {/* face */}
+      <Eyes expr={expr} cx1={62} cy1={74} cx2={98} cy2={74} r={6}/>
+      <Mouth expr={expr} mx={80} my={88}/>
+      {stage >= 1 && <path d="M30,55 Q40,48 35,62" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>}
+      {stage >= 2 && <path d="M125,110 Q115,103 120,117" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>}
+      {stage >= 3 && <line x1="50" y1="120" x2="60" y2="130" stroke="white" strokeWidth="2" opacity="0.5"/>}
+      {stage >= 4 && <><line x1="95" y1="40" x2="108" y2="32" stroke="white" strokeWidth="2.5" opacity="0.7"/>
+        <line x1="25" y1="90" x2="18" y2="100" stroke="white" strokeWidth="2" opacity="0.5"/></>}
+    </svg>
+  );
+}
+
+// ── 외계인
+function AlienSVG({ expr='normal', stage=0 }) {
+  return (
+    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+      {/* antenna */}
+      <line x1="80" y1="20" x2="68" y2="8" stroke="#6BCB77" strokeWidth="4" strokeLinecap="round"/>
+      <circle cx="64" cy="5" r="6" fill="#FFD93D" stroke="#6BCB77" strokeWidth="2"/>
+      {/* head */}
+      <ellipse cx="80" cy="85" rx="50" ry="60" fill="#6BCB77"/>
+      {/* big eyes */}
+      <ellipse cx="58" cy="72" rx="18" ry="22" fill="#111"/>
+      <ellipse cx="102" cy="72" rx="18" ry="22" fill="#111"/>
+      <ellipse cx="63" cy="66" rx="7" ry="9" fill="white" opacity="0.8"/>
+      <ellipse cx="107" cy="66" rx="7" ry="9" fill="white" opacity="0.8"/>
+      {expr === 'surprised' && <><ellipse cx="58" cy="72" rx="22" ry="26" fill="#111"/><ellipse cx="102" cy="72" rx="22" ry="26" fill="#111"/></>}
+      {expr === 'dizzy' && <><text x="42" y="80" fontSize="22" fill="white">×</text><text x="86" y="80" fontSize="22" fill="white">×</text></>}
+      {expr === 'pain' && <><text x="46" y="80" fontSize="20" fill="white">T</text><text x="90" y="80" fontSize="20" fill="white">T</text></>}
+      {expr === 'angry' && <><line x1="42" y1="54" x2="72" y2="62" stroke="#3D2B1F" strokeWidth="4"/><line x1="88" y1="62" x2="118" y2="54" stroke="#3D2B1F" strokeWidth="4"/></>}
+      {/* mouth */}
+      {expr === 'normal' && <path d="M62,110 Q80,122 98,110" stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>}
+      {expr === 'surprised' && <ellipse cx="80" cy="112" rx="10" ry="8" fill="#3D2B1F"/>}
+      {expr === 'pain' && <path d="M62,114 Q80,106 98,114" stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>}
+      {expr === 'dizzy' && <path d="M64,110 Q72,104 80,110 Q88,116 96,110" stroke="#3D2B1F" strokeWidth="2.5" fill="none"/>}
+      {expr === 'angry' && <path d="M64,112 Q80,104 96,112" stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>}
+      {/* spots */}
+      <circle cx="52" cy="98" r="5" fill="#4CAF50" opacity="0.5"/>
+      <circle cx="108" cy="95" r="5" fill="#4CAF50" opacity="0.5"/>
+      <DamageScars stage={stage} color="#2D7A2D"/>
+    </svg>
+  );
+}
+
+// ── 샌드백
+function SandbagSVG({ expr='normal', stage=0 }) {
+  const tilt = stage >= 2 ? `rotate(${stage*4-4},80,80)` : '';
+  return (
+    <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
+      {/* chain */}
+      <line x1="80" y1="8" x2="80" y2="28" stroke="#999" strokeWidth="4" strokeLinecap="round"/>
+      <ellipse cx="80" cy="10" rx="10" ry="6" fill="none" stroke="#999" strokeWidth="3"/>
+      <g transform={tilt}>
+        {/* bag body */}
+        <rect x="35" y="28" width="90" height="108" rx="18" fill="#D4956A"/>
+        {/* texture stripes */}
+        <rect x="35" y="50" width="90" height="6" fill="#C07A50" rx="2"/>
+        <rect x="35" y="78" width="90" height="6" fill="#C07A50" rx="2"/>
+        <rect x="35" y="106" width="90" height="6" fill="#C07A50" rx="2"/>
+        {/* top/bottom caps */}
+        <rect x="35" y="28" width="90" height="20" rx="18" fill="#BA7040"/>
+        <rect x="35" y="116" width="90" height="20" rx="10" fill="#BA7040"/>
+        {/* face */}
+        <Eyes expr={expr} cx1={63} cy1={74} cx2={97} cy2={74} r={7}/>
+        <Mouth expr={expr} mx={80} my={92}/>
+        {(expr === 'normal') && <>
+          <circle cx="50" cy="82" r="8" fill="#FFAA66" opacity="0.4"/>
+          <circle cx="110" cy="82" r="8" fill="#FFAA66" opacity="0.4"/>
+        </>}
+        {/* damage */}
+        {stage >= 1 && <line x1="100" y1="58" x2="114" y2="70" stroke="#8B5A2B" strokeWidth="3" strokeLinecap="round" opacity="0.8"/>}
+        {stage >= 2 && <path d="M40,90 L48,98 L40,106" fill="none" stroke="#8B5A2B" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>}
+        {stage >= 3 && <><line x1="85" y1="112" x2="95" y2="128" stroke="#8B5A2B" strokeWidth="3" opacity="0.7"/>
+          <line x1="55" y1="115" x2="48" y2="128" stroke="#8B5A2B" strokeWidth="2.5" opacity="0.6"/></>}
+        {stage >= 4 && <><line x1="115" y1="90" x2="128" y2="82" stroke="#8B5A2B" strokeWidth="3" opacity="0.8"/>
+          <path d="M70,42 L76,32 L82,42" fill="none" stroke="#8B5A2B" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
+          <circle cx="60" cy="60" r="5" fill="none" stroke="#8B5A2B" strokeWidth="2" opacity="0.6"/></>}
+      </g>
+    </svg>
+  );
+}
+
+const CHARACTERS = [
+  { id:'bear',    name:'곰돌이',    desc:'귀여운 갈색 곰',  emoji:'🐻', Component: BearSVG,    color:'#C68642' },
+  { id:'cushion', name:'소파 쿠션', desc:'폭신폭신 쿠션',   emoji:'🛋️', Component: CushionSVG, color:'#FF8FAB' },
+  { id:'alien',   name:'외계인',    desc:'어디선가 온 친구', emoji:'👽', Component: AlienSVG,   color:'#6BCB77' },
+  { id:'sandbag', name:'샌드백',    desc:'묵직한 샌드백',   emoji:'🥊', Component: SandbagSVG, color:'#D4956A' },
+];
+
+const EXPRESSIONS = ['normal','surprised','pain','dizzy','angry'];
+const PARTICLES   = ['💥','⭐','✨','💫','🌟','❗','😵','💢','🔥','💦'];
+const MESSAGES = [
+  [1,   '첫 번째 꾹! 🎉'],
+  [5,   '5번이나..! 😳'],
+  [10,  '10번! 진짜로요? 😂'],
+  [20,  '이제 멈춰요 😭'],
+  [30,  '30번... 미쳤다 🤯'],
+  [50,  '50번 달성! 🏆'],
+  [77,  '럭키 77! 🍀'],
+  [100, '100번!! 전설 등극 👑'],
+  [150, '너무해요 진짜... 😢'],
+  [200, '200번... 이제 그만 🙏'],
+  [300, '300번... 사람 아닌가요? 🤖'],
+  [500, '500번!! 의사 필요함 🏥'],
+];
+
+function getRawStage(count) {
+  if (count < 10)  return 0;
+  if (count < 50)  return 1;
+  if (count < 150) return 2;
+  if (count < 300) return 3;
+  return 4;
+}
+const STAGE_LABELS = ['✨ 멀쩡함','🩹 약간 흠집','😰 많이 맞음','😵 거의 망가짐','💀 너덜너덜'];
+
+const HEAL_ACTIONS = [
+  {
+    id: 'pet',
+    name: '쓰다듬기',
+    desc: '한 단계 회복',
+    icon: '🤗',
+    cost: 10,
+    stageRecover: 1,
+    className: 'pet',
+    particles: ['💛','🌼','✨','🤍','💫'],
+    bloomColor: 'rgba(255,217,61,0.35)',
+    toastMsg: (name) => `${name}을(를) 쓰다듬어줬어... 🥹`,
+  },
+  {
+    id: 'sew',
+    name: '꿰매주기',
+    desc: '두 단계 회복',
+    icon: '🪡',
+    cost: 25,
+    stageRecover: 2,
+    className: 'sew',
+    particles: ['🪡','💙','⭐','🩹','💎'],
+    bloomColor: 'rgba(77,150,255,0.30)',
+    toastMsg: (name) => `바느질로 ${name}을(를) 고쳐줬다 🧵`,
+  },
+  {
+    id: 'full',
+    name: '완전히 고쳐주기',
+    desc: '말짱하게 전체 회복',
+    icon: '🌈',
+    cost: 50,
+    stageRecover: 99,
+    className: 'full',
+    particles: ['🌈','💚','🌟','🎀','💐','🎊','✨','🥳'],
+    bloomColor: 'rgba(107,203,119,0.35)',
+    toastMsg: (name) => `${name} 완전 회복! 미안했어 💚`,
+  },
+];
+
+/* ═══════════════════════════════════════════
+   SHARE HELPERS
+═══════════════════════════════════════════ */
+function getShareMsg(count) {
+  if (count >= 50) return '우와 오늘의 스트레스 지수!!';
+  if (count >= 30) return '스파링 끝! 이제 다 풀렸다!!';
+  if (count >= 10) return '이정도면 양호하지';
+  return null;
+}
+
+function canvasRRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y,     x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x,     y + h, r);
+  ctx.arcTo(x,     y + h, x,     y,     r);
+  ctx.arcTo(x,     y,     x + w, y,     r);
+  ctx.closePath();
+}
+
+async function buildShareCanvas(svgEl, count, stage, charColor, displayName) {
+  // 폰트 로드 (CSS에서 이미 로드됐으면 스킵)
+  await document.fonts.ready;
+  if (!document.fonts.check('18px Jua')) {
+    try {
+      const f = new FontFace('Jua', 'url(https://fonts.gstatic.com/s/jua/v16/co3KmW9ljjAjc-DZCsKgsg.woff2)');
+      await Promise.race([f.load(), new Promise(r => setTimeout(r, 3000))]);
+      document.fonts.add(f);
+    } catch(e) {}
+  }
+
+  const DPR = 2;
+  const W = 400, H = 580;
+  const cvs = document.createElement('canvas');
+  cvs.width  = W * DPR;
+  cvs.height = H * DPR;
+  const c = cvs.getContext('2d');
+  c.scale(DPR, DPR);
+
+  // ── 배경
+  const bgGrad = c.createLinearGradient(0, 0, 0, H);
+  bgGrad.addColorStop(0, '#FFFFFF');
+  bgGrad.addColorStop(1, '#FFF2E4');
+  c.fillStyle = bgGrad;
+  c.fillRect(0, 0, W, H);
+
+  // 상단 컬러 바
+  c.fillStyle = '#FF6B6B';
+  c.fillRect(0, 0, W, 7);
+
+  // 데코 원
+  [
+    [28,  62, 26], [375, 85, 18],
+    [14, 310, 15], [388,255, 13],
+    [42, 505, 22], [362,510, 14],
+  ].forEach(([x, y, r]) => {
+    c.beginPath();
+    c.arc(x, y, r, 0, Math.PI * 2);
+    // charColor에 알파 붙이기
+    const base = charColor.replace('#','');
+    const rgb = base.length === 3
+      ? base.split('').map(ch => parseInt(ch+ch,16))
+      : [parseInt(base.slice(0,2),16),parseInt(base.slice(2,4),16),parseInt(base.slice(4,6),16)];
+    c.fillStyle = `rgba(${rgb[0]},${rgb[1]},${rgb[2]},0.12)`;
+    c.fill();
+  });
+
+  // ── GGUK 꾹 타이틀
+  c.textAlign = 'center';
+  c.font = 'bold 20px Jua, sans-serif';
+  c.fillStyle = '#FF6B6B';
+  c.fillText('GGUK 꾹', W / 2, 44);
+
+  // ── 캐릭터 SVG
+  try {
+    const clone = svgEl.cloneNode(true);
+    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    clone.setAttribute('width',  '240');
+    clone.setAttribute('height', '240');
+    const svgStr  = new XMLSerializer().serializeToString(clone);
+    const svgBlob = new Blob([svgStr], { type: 'image/svg+xml;charset=utf-8' });
+    const svgUrl  = URL.createObjectURL(svgBlob);
+    await new Promise(res => {
+      const img = new Image();
+      img.onload  = () => { c.drawImage(img, W/2 - 120, 58, 240, 240); URL.revokeObjectURL(svgUrl); res(); };
+      img.onerror = () => { URL.revokeObjectURL(svgUrl); res(); };
+      img.src = svgUrl;
+    });
+  } catch(e) {}
+
+  // ── 꾹 횟수
+  c.shadowColor = '#FFD93D';
+  c.shadowOffsetX = 3; c.shadowOffsetY = 3; c.shadowBlur = 0;
+  c.font = 'bold 76px Jua, sans-serif';
+  c.fillStyle = '#FF6B6B';
+  c.fillText(count.toLocaleString(), W / 2, 372);
+  c.shadowColor = 'transparent'; c.shadowOffsetX = 0; c.shadowOffsetY = 0;
+
+  c.font = '20px Jua, sans-serif';
+  c.fillStyle = '#bbb';
+  c.fillText('번 꾹', W / 2, 402);
+
+  // ── 메시지 필
+  const msg = getShareMsg(count);
+  if (msg) {
+    const msgBg  = count >= 50 ? '#FF6B6B' : count >= 30 ? '#4D96FF' : '#6BCB77';
+    c.font = 'bold 20px Jua, sans-serif';
+    const tw = c.measureText(msg).width;
+    const pw = tw + 56, ph = 46;
+    const px = W / 2 - pw / 2, py = 422;
+    canvasRRect(c, px, py, pw, ph, 23);
+    c.fillStyle = msgBg;
+    c.fill();
+    c.fillStyle = '#fff';
+    c.fillText(msg, W / 2, py + 30);
+  }
+
+  // ── 스테이지 라벨
+  const stageY = msg ? 496 : 440;
+  c.font = '14px Jua, sans-serif';
+  c.fillStyle = '#ccc';
+  c.fillText(STAGE_LABELS[stage], W / 2, stageY);
+
+  // ── 푸터
+  c.font = '13px Jua, sans-serif';
+  c.fillStyle = '#ddd';
+  c.fillText('— made with GGUK 꾹 —', W / 2, H - 20);
+
+  return cvs;
+}
+
+/* ═══════════════════════════════════════════
+   APP
+═══════════════════════════════════════════ */
+function App() {
+  const [screen, setScreen]         = useState('select'); // select | nickname | game
+  const [charId, setCharId]         = useState(null);
+  const [nickname, setNickname]     = useState('');
+  const [count, setCount]           = useState(0);
+  const [healOffset, setHealOffset] = useState(0); // 회복으로 낮춘 스테이지 오프셋
+  const [exprIdx, setExprIdx]       = useState(0);
+  const [particles, setParticles]   = useState([]);
+  const [isHit, setIsHit]           = useState(false);
+  const [isHealing, setIsHealing]   = useState(false);
+  const [healBloom, setHealBloom]   = useState(null); // { color, key }
+  const [healPanelOpen, setHealPanelOpen] = useState(false);
+  const [shareOpen, setShareOpen]         = useState(false);
+  const [shareDataUrl, setShareDataUrl]   = useState(null);
+  const [shareLoading, setShareLoading]   = useState(false);
+  const [toast, setToast]           = useState(null);
+  const toastTimer    = useRef(null);
+  const hitTimer      = useRef(null);
+  const healTimer     = useRef(null);
+  const tapAreaRef    = useRef(null);
+  const shareCharRef  = useRef(null);
+  const nextParticleId = useRef(0);
+
+  const char = CHARACTERS.find(c => c.id === charId);
+  // stage = rawStage minus healOffset, floored at 0
+  const rawStage = getRawStage(count);
+  const stage = Math.max(0, rawStage - healOffset);
+  const CharComponent = char?.Component;
+
+  // milestone messages
+  useEffect(() => {
+    const milestone = MESSAGES.find(([n]) => n === count);
+    if (milestone) {
+      if (toastTimer.current) clearTimeout(toastTimer.current);
+      setToast(milestone[1]);
+      toastTimer.current = setTimeout(() => setToast(null), 2200);
+    }
+  }, [count]);
+
+  const showToast = useCallback((msg) => {
+    if (toastTimer.current) clearTimeout(toastTimer.current);
+    setToast(msg);
+    toastTimer.current = setTimeout(() => setToast(null), 2400);
+  }, []);
+
+  const handleTap = useCallback((e) => {
+    if (healPanelOpen) return;
+    e.preventDefault();
+
+    const rect = tapAreaRef.current?.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    const px = rect ? clientX - rect.left : 100;
+    const py = rect ? clientY - rect.top  : 100;
+
+    setCount(c => c + 1);
+    setExprIdx(i => (i + 1) % EXPRESSIONS.length);
+
+    // particle burst
+    const burst = Math.floor(Math.random() * 3) + 2;
+    const newParticles = Array.from({ length: burst }, () => ({
+      id: nextParticleId.current++,
+      x: px + (Math.random() - 0.5) * 60,
+      y: py + (Math.random() - 0.5) * 40,
+      emoji: PARTICLES[Math.floor(Math.random() * PARTICLES.length)],
+    }));
+    setParticles(p => [...p, ...newParticles]);
+    setTimeout(() => {
+      setParticles(p => p.filter(pk => !newParticles.find(np => np.id === pk.id)));
+    }, 900);
+
+    if (hitTimer.current) clearTimeout(hitTimer.current);
+    setIsHit(true);
+    hitTimer.current = setTimeout(() => setIsHit(false), 350);
+  }, [healPanelOpen]);
+
+  const handleHeal = useCallback((action) => {
+    // 꾹 잔액 부족
+    if (count < action.cost) return;
+    if (stage === 0) return; // 이미 멀쩡함
+
+    setHealPanelOpen(false);
+
+    const stagesCanRecover = Math.min(action.stageRecover, stage);
+    if (stagesCanRecover <= 0) return;
+
+    // 꾹 차감 & healOffset 증가
+    setCount(c => c - action.cost);
+    setHealOffset(off => off + stagesCanRecover);
+
+    // 회복 표정 → normal 로
+    setExprIdx(0);
+
+    // 파티클 burst (heal 전용)
+    const healParticles = Array.from({ length: action.id === 'full' ? 12 : 6 }, (_, i) => ({
+      id: nextParticleId.current++,
+      x: 30 + Math.random() * 200,
+      y: 40 + Math.random() * 200,
+      emoji: action.particles[i % action.particles.length],
+      dur: 0.7 + Math.random() * 0.6,
+    }));
+    setParticles(p => [...p, ...healParticles]);
+    setTimeout(() => {
+      setParticles(p => p.filter(pk => !healParticles.find(hp => hp.id === pk.id)));
+    }, 1400);
+
+    // bloom + bounce
+    setHealBloom({ color: action.bloomColor, key: Date.now() });
+    if (healTimer.current) clearTimeout(healTimer.current);
+    setIsHealing(true);
+    healTimer.current = setTimeout(() => {
+      setIsHealing(false);
+      setHealBloom(null);
+    }, 700);
+
+    showToast(action.toastMsg(nickname.trim() || char.name));
+  }, [count, stage, nickname, char, showToast]);
+
+  const handleOpenShare = useCallback(async () => {
+    setHealPanelOpen(false);
+    setShareOpen(true);
+    setShareLoading(true);
+    setShareDataUrl(null);
+    // hidden 캐릭터 div 렌더 대기
+    await new Promise(r => setTimeout(r, 80));
+    try {
+      const svgEl = shareCharRef.current?.querySelector('svg');
+      if (!svgEl) throw new Error('svg not found');
+      const displayName = nickname.trim() || char?.name || '';
+      const canvas = await buildShareCanvas(svgEl, count, stage, char?.color || '#FF6B6B', displayName);
+      setShareDataUrl(canvas.toDataURL('image/png'));
+    } catch(e) {
+      console.error('share error:', e);
+    }
+    setShareLoading(false);
+  }, [count, stage, char, nickname]);
+
+  const handleSaveImage = useCallback(() => {
+    if (!shareDataUrl) return;
+    const a = document.createElement('a');
+    a.href = shareDataUrl;
+    a.download = `GGUK_${count}회꾹.png`;
+    a.click();
+  }, [shareDataUrl, count]);
+
+  const handleNativeShare = useCallback(async () => {
+    if (!shareDataUrl || !navigator.share) return;
+    try {
+      const res  = await fetch(shareDataUrl);
+      const blob = await res.blob();
+      const file = new File([blob], `GGUK_${count}회꾹.png`, { type: 'image/png' });
+      const msg  = getShareMsg(count);
+      await navigator.share({
+        title: 'GGUK 꾹',
+        text:  `${count}번 꾹! ${msg || ''}`.trim(),
+        files: [file],
+      });
+    } catch(e) { /* 취소 */ }
+  }, [shareDataUrl, count]);
+
+  /* ── SCREEN 1: SELECT ── */
+  if (screen === 'select') return (
+    <div className="screen">
+      <div className="select-tagline">한 판 크게 붇고 싶은데 차마 붙을 용기는 나지 않을 때,</div>
+      <div className="select-title">GGUK 꾹</div>
+      <div className="select-subtitle">오늘의 스파링 상대를 골라줘 👊</div>
+      <div className="char-grid">
+        {CHARACTERS.map(c => (
+          <div
+            key={c.id}
+            className={`char-card ${charId === c.id ? 'selected' : ''}`}
+            onClick={() => setCharId(c.id)}
+          >
+            <c.Component expr="normal" stage={0}/>
+            <div className="char-name">{c.name}</div>
+            <div className="char-desc">{c.desc}</div>
+          </div>
+        ))}
+      </div>
+      <button
+        className="btn-primary"
+        disabled={!charId}
+        onClick={() => setScreen('nickname')}
+      >
+        이 친구로 할게요 →
+      </button>
+    </div>
+  );
+
+  /* ── SCREEN 2: NICKNAME ── */
+  if (screen === 'nickname') return (
+    <div className="screen nickname-screen">
+      <div className="nickname-char-preview">
+        {CharComponent && <CharComponent expr="normal" stage={0}/>}
+      </div>
+      <div className="nickname-label">별명을 지어줘! 😈</div>
+      <div className="nickname-hint">(친근하게 불러줄수록 더 미안해짐)</div>
+      <input
+        className="nickname-input"
+        placeholder={`${char.name}이`}
+        value={nickname}
+        maxLength={10}
+        onChange={e => setNickname(e.target.value)}
+        onKeyDown={e => { if (e.key === 'Enter' && (nickname.trim() || true)) setScreen('game'); }}
+      />
+      <button
+        className="btn-primary"
+        style={{marginTop:24}}
+        onClick={() => setScreen('game')}
+      >
+        꾹 시작! 💪
+      </button>
+      <button
+        onClick={() => setScreen('select')}
+        style={{marginTop:14, background:'none', border:'none', color:'#aaa', fontSize:'0.95rem', cursor:'pointer'}}
+      >
+        ← 다시 고를게요
+      </button>
+    </div>
+  );
+
+  /* ── SCREEN 3: GAME ── */
+  const displayName = nickname.trim() || char.name;
+  const currentExpr = isHealing ? 'normal' : EXPRESSIONS[exprIdx];
+
+  return (
+    <div className="screen game-screen">
+      <div className="game-header">
+        <div className="game-nickname">📍 {displayName}</div>
+        <div className="game-stage-badge">{STAGE_LABELS[stage]}</div>
+      </div>
+
+      <div className="counter-area">
+        <div
+          className={`counter-number ${isHealing ? 'counter-heal' : ''}`}
+          key={count}
+        >{count.toLocaleString()}</div>
+        <div className="counter-label">번 꾹 남음</div>
+      </div>
+
+      {/* stage indicator dots */}
+      <div className="char-stage-bar">
+        {[0,1,2,3,4].map(i => (
+          <div
+            key={i}
+            className={`stage-dot ${i <= stage ? 'active' : ''} ${isHealing && i > stage ? 'healed' : ''}`}
+          />
+        ))}
+      </div>
+
+      {/* character tap area */}
+      <div
+        ref={tapAreaRef}
+        className={`char-tap-area ${isHit ? 'hit' : ''} ${isHealing ? 'heal-char-bounce' : ''}`}
+        onPointerDown={handleTap}
+        style={{ flex: 1, paddingTop: 8, position: 'relative' }}
+      >
+        {CharComponent && <CharComponent expr={currentExpr} stage={stage}/>}
+
+        {/* bloom overlay */}
+        {healBloom && (
+          <div
+            key={healBloom.key}
+            className="heal-bloom"
+            style={{ background: healBloom.color }}
+          />
+        )}
+
+        {/* floating particles (both hit & heal) */}
+        {particles.map(p => (
+          <span
+            key={p.id}
+            className={p.dur ? 'heal-particle' : 'effect-particle'}
+            style={{
+              left: p.x, top: p.y,
+              ...(p.dur ? { '--dur': `${p.dur}s` } : {}),
+            }}
+          >{p.emoji}</span>
+        ))}
+      </div>
+
+      {toast && <div className="message-toast" key={toast}>{toast}</div>}
+
+      {/* heal toggle button — only show when damaged */}
+      {stage > 0 && (
+        <button
+          className="heal-toggle-btn"
+          onClick={() => setHealPanelOpen(o => !o)}
+          title="기워주기"
+        >
+          {healPanelOpen ? '✕' : '🩹'}
+        </button>
+      )}
+
+      <div className="game-bottom">
+        <div className="tap-hint">탭 해서 꾹꾹 눌러줘 👇</div>
+        <button className="game-share-btn" onClick={handleOpenShare}>
+          📤 공유하기
+        </button>
+        <button
+          onClick={() => { setCount(0); setHealOffset(0); setExprIdx(0); setScreen('select'); }}
+          style={{marginTop:8, background:'none', border:'2px solid #eee', color:'#bbb',
+                  fontFamily:"'Jua',sans-serif", fontSize:'0.9rem', padding:'8px 22px',
+                  borderRadius:40, cursor:'pointer'}}
+        >
+          처음부터
+        </button>
+      </div>
+
+      {/* 공유용 히든 캐릭터 (normal 표정, 현재 stage) */}
+      <div ref={shareCharRef} style={{position:'absolute',left:-9999,top:-9999,
+        width:240,height:240,pointerEvents:'none',overflow:'hidden',opacity:0}}>
+        {CharComponent && <CharComponent expr="normal" stage={stage}/>}
+      </div>
+
+      {/* dim overlay */}
+      {(healPanelOpen || shareOpen) && (
+        <div className="heal-overlay" onClick={() => { setHealPanelOpen(false); setShareOpen(false); }}/>
+      )}
+
+      {/* ── 공유 시트 ── */}
+      <div className={`share-sheet ${shareOpen ? 'open' : ''}`}>
+        <div className="share-sheet-handle"/>
+        <div className="share-sheet-title">📤 공유하기</div>
+
+        <div className="share-preview-wrap">
+          {shareLoading && <div className="share-loading-text">이미지 만드는 중... ✨</div>}
+          {!shareLoading && shareDataUrl && (
+            <img src={shareDataUrl} alt="share preview"/>
+          )}
+        </div>
+
+        <div className="share-actions">
+          <button className="share-btn save" onClick={handleSaveImage} disabled={!shareDataUrl}>
+            📥 저장하기
+          </button>
+          {navigator.canShare && (
+            <button className="share-btn native" onClick={handleNativeShare} disabled={!shareDataUrl}>
+              🔗 공유하기
+            </button>
+          )}
+        </div>
+        <button className="share-close" onClick={() => setShareOpen(false)}>닫기</button>
+      </div>
+
+      {/* heal panel (bottom sheet) */}
+      <div className={`heal-panel ${healPanelOpen ? 'open' : ''}`}>
+        <div className="heal-panel-handle"/>
+        <div className="heal-panel-title">🩹 기워주기</div>
+        <div className="heal-panel-subtitle">꾹 잔액을 써서 {displayName}을(를) 회복시켜줄 수 있어</div>
+
+        <div className="heal-buttons">
+          {HEAL_ACTIONS.map(action => {
+            const canAfford = count >= action.cost;
+            const alreadyFull = stage === 0;
+            const disabled = !canAfford || alreadyFull;
+            return (
+              <button
+                key={action.id}
+                className={`heal-btn ${action.className}`}
+                disabled={disabled}
+                onClick={() => handleHeal(action)}
+              >
+                <span className="heal-btn-icon">{action.icon}</span>
+                <span className="heal-btn-body">
+                  <div className="heal-btn-name">{action.name}</div>
+                  <div className="heal-btn-desc">{action.desc}</div>
+                </span>
+                <span className="heal-btn-cost">−{action.cost}꾹</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {stage === 0 && (
+          <div style={{textAlign:'center', marginTop:16, color:'#aaa', fontSize:'0.9rem'}}>
+            {displayName} 지금 멀쩡해! ✨
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(<App/>);
+</script>
+</body>
+</html>
