@@ -256,21 +256,57 @@
       filter: drop-shadow(0 12px 24px rgba(0,0,0,0.12));
       transition: transform 0.08s;
     }
-    .char-tap-area.hit svg { animation: charHit 0.25s ease; }
+    .char-tap-area.hit svg { animation: charHit 0.32s cubic-bezier(0.36,0.07,0.19,0.97); }
     @keyframes charHit {
-      0%   { transform: scale(1) rotate(0deg); }
-      25%  { transform: scale(0.88) rotate(-4deg); }
-      60%  { transform: scale(1.06) rotate(2deg); }
-      100% { transform: scale(1) rotate(0deg); }
+      0%   { transform: scale(1)    rotate(0deg); }
+      15%  { transform: scale(0.72) rotate(-10deg) translateY(8px); }
+      50%  { transform: scale(1.16) rotate(5deg)  translateY(-6px); }
+      75%  { transform: scale(0.94) rotate(-2deg); }
+      100% { transform: scale(1)    rotate(0deg); }
     }
     .char-tap-area.shake svg { animation: charShake 0.3s ease; }
     @keyframes charShake {
       0%,100% { transform: translateX(0); }
-      20% { transform: translateX(-8px) rotate(-3deg); }
-      40% { transform: translateX(8px) rotate(3deg); }
-      60% { transform: translateX(-6px) rotate(-2deg); }
-      80% { transform: translateX(6px) rotate(2deg); }
+      20% { transform: translateX(-10px) rotate(-4deg); }
+      40% { transform: translateX(10px) rotate(4deg); }
+      60% { transform: translateX(-7px) rotate(-2deg); }
+      80% { transform: translateX(7px) rotate(2deg); }
     }
+
+    /* 화면 흔들림 */
+    .game-screen.screen-shake {
+      animation: screenShake 0.28s ease;
+    }
+    @keyframes screenShake {
+      0%,100% { transform: translateX(0) translateY(0); }
+      20%  { transform: translateX(-7px) translateY(-2px); }
+      40%  { transform: translateX(7px)  translateY(2px); }
+      60%  { transform: translateX(-5px) translateY(-1px); }
+      80%  { transform: translateX(5px)  translateY(1px); }
+    }
+
+    /* 타격 빨간 플래시 */
+    .hit-flash {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,30,30,0.32) 0%, transparent 68%);
+      pointer-events: none;
+      z-index: 8;
+      animation: hitFlashAnim 0.28s ease forwards;
+    }
+    @keyframes hitFlashAnim {
+      0%   { opacity:1; transform: scale(0.5); }
+      40%  { opacity:1; transform: scale(1.1); }
+      100% { opacity:0; transform: scale(1.3); }
+    }
+
+    /* 단계별 스테이지 도트 색 */
+    .stage-dot.s1 { background: #FFD93D; }
+    .stage-dot.s2 { background: #FF9F43; }
+    .stage-dot.s3 { background: #FF6B6B; }
+    .stage-dot.s4 { background: #C0392B; animation: dotPulse 0.8s infinite; }
+    @keyframes dotPulse { 0%,100%{transform:scale(1)} 50%{transform:scale(1.4)} }
 
     /* floating effects */
     .effect-particle {
@@ -673,42 +709,61 @@ function Mouth({ expr, mx=80, my=97 }) {
   return <path d={`M${mx-10},${my} Q${mx},${my+12} ${mx+10},${my}`} stroke="#3D2B1F" strokeWidth="3" fill="none" strokeLinecap="round"/>;
 }
 
-function DamageScars({ stage, color }) {
+function DamageScars({ stage }) {
   if (stage === 0) return null;
   return <>
-    {stage >= 1 && <line x1="100" y1="50" x2="112" y2="66" stroke={color} strokeWidth="3" strokeLinecap="round" opacity="0.7"/>}
+    {/* ── 1단계: 빨간 X 스크래치 */}
+    {stage >= 1 && <>
+      <line x1="97" y1="44" x2="119" y2="68" stroke="#FF1A1A" strokeWidth="5.5" strokeLinecap="round" opacity="0.92"/>
+      <line x1="119" y1="44" x2="97"  y2="68" stroke="#FF1A1A" strokeWidth="5.5" strokeLinecap="round" opacity="0.92"/>
+    </>}
+    {/* ── 2단계: 보라 멍 + 세로 긁힘 */}
     {stage >= 2 && <>
-      <line x1="45" y1="80" x2="55" y2="100" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.6"/>
-      <circle cx={110} cy={110} r={4} fill="none" stroke={color} strokeWidth="2" opacity="0.5"/>
+      <ellipse cx="35" cy="95" rx="17" ry="11" fill="#8B2FC9" opacity="0.5"/>
+      <ellipse cx="35" cy="95" rx="9"  ry="6"  fill="#8B2FC9" opacity="0.3"/>
+      <line x1="46" y1="72" x2="58" y2="106" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.88"/>
     </>}
+    {/* ── 3단계: 반창고 + 멍 추가 */}
     {stage >= 3 && <>
-      <line x1="70" y1="120" x2="60" y2="138" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-      <path d="M90,135 L96,142 L90,149" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
+      <rect x="58" y="121" width="36" height="15" rx="5" fill="#FBBF24"/>
+      <rect x="70" y="117" width="12" height="23" rx="3" fill="#F59E0B"/>
+      <line x1="70" y1="121" x2="70" y2="140" stroke="#92400E" strokeWidth="1.5" opacity="0.45"/>
+      <line x1="58" y1="128" x2="94" y2="128" stroke="#92400E" strokeWidth="1.5" opacity="0.45"/>
+      <ellipse cx="123" cy="104" rx="14" ry="9" fill="#8B2FC9" opacity="0.48"/>
+      <ellipse cx="123" cy="104" rx="7"  ry="5" fill="#8B2FC9" opacity="0.3"/>
     </>}
+    {/* ── 4단계: 두 번째 X + 추가 상처 */}
     {stage >= 4 && <>
-      <line x1="55" y1="55" x2="65" y2="70" stroke={color} strokeWidth="3" strokeLinecap="round" opacity="0.8"/>
-      <line x1="115" y1="130" x2="125" y2="115" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-      <line x1="40" y1="110" x2="52" y2="105" stroke={color} strokeWidth="2" strokeLinecap="round" opacity="0.6"/>
-      <path d="M78,58 L84,50 L90,58" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" opacity="0.5"/>
+      <line x1="44" y1="44" x2="68" y2="72" stroke="#FF1A1A" strokeWidth="5.5" strokeLinecap="round" opacity="0.95"/>
+      <line x1="68" y1="44" x2="44" y2="72" stroke="#FF1A1A" strokeWidth="5.5" strokeLinecap="round" opacity="0.95"/>
+      <line x1="122" y1="134" x2="138" y2="112" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.88"/>
+      <ellipse cx="28" cy="122" rx="12" ry="7" fill="#8B2FC9" opacity="0.45"/>
+      <line x1="108" y1="48"  x2="120" y2="68"  stroke="#FF1A1A" strokeWidth="4" strokeLinecap="round" opacity="0.75"/>
     </>}
   </>;
 }
 
 // ── 곰돌이
 function BearSVG({ expr='normal', stage=0 }) {
-  const tilt = stage >= 3 ? 'rotate(-6,80,80)' : stage >= 4 ? 'rotate(-10,80,80)' : '';
+  const tilt = stage >= 4 ? 'rotate(-12,80,90)' : stage >= 3 ? 'rotate(-7,80,90)' : '';
+  const bodyColor = ['#C68642','#C68642','#B8763A','#A86830','#965A24'][stage];
   return (
     <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
       <g transform={tilt}>
-        {/* ears */}
-        <circle cx="38" cy="50" r="22" fill="#C68642"/>
-        <circle cx="122" cy="50" r="22" fill="#C68642"/>
-        <circle cx="38" cy="50" r="13" fill="#E8967A"/>
-        <circle cx="122" cy="50" r="13" fill="#E8967A"/>
+        {/* ears — stage4: 한 쪽 찌그러짐 */}
+        <circle cx="38"  cy="50" r="22" fill={bodyColor}/>
+        <circle cx="122" cy="50" r={stage >= 4 ? 18 : 22} fill={bodyColor}/>
+        <circle cx="38"  cy="50" r="13" fill="#E8967A"/>
+        <circle cx="122" cy="50" r={stage >= 4 ? 10 : 13} fill="#E8967A"/>
         {/* head */}
-        <ellipse cx="80" cy="90" rx="52" ry="50" fill="#C68642"/>
+        <ellipse cx="80" cy="90" rx="52" ry="50" fill={bodyColor}/>
         {/* face patch */}
         <ellipse cx="80" cy="102" rx="28" ry="22" fill="#E8967A"/>
+        {/* 다크서클 (2단계~) */}
+        {stage >= 2 && <>
+          <ellipse cx="63" cy="85" rx="11" ry="5" fill="#7A4020" opacity={0.25 + stage * 0.08}/>
+          <ellipse cx="97" cy="85" rx="11" ry="5" fill="#7A4020" opacity={0.25 + stage * 0.08}/>
+        </>}
         {/* eyes */}
         <Eyes expr={expr} cx1={63} cy1={80} cx2={97} cy2={80}/>
         {/* nose */}
@@ -719,7 +774,7 @@ function BearSVG({ expr='normal', stage=0 }) {
           <circle cx="52" cy="95" r="10" fill="#FFAA88" opacity="0.5"/>
           <circle cx="108" cy="95" r="10" fill="#FFAA88" opacity="0.5"/>
         </>}
-        <DamageScars stage={stage} color="#8B5A2B"/>
+        <DamageScars stage={stage}/>
       </g>
     </svg>
   );
@@ -735,6 +790,41 @@ function CushionSVG({ expr='normal', stage=0 }) {
       <rect x="18" y="28" width="124" height="108" rx="30" fill={c}/>
       {/* stitching border */}
       <rect x="26" y="36" width="108" height="92" rx="22" fill="none" stroke="white" strokeWidth="2.5" strokeDasharray="6 4" opacity="0.5"/>
+
+      {/* ── 1단계: 오른쪽 상단 찢어짐 + 솜 */}
+      {stage >= 1 && <>
+        <path d="M120,40 L108,56 L120,62 L105,78" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" opacity="0.95"/>
+        <circle cx="116" cy="43" r="5"   fill="white" opacity="0.8"/>
+        <circle cx="122" cy="52" r="3.5" fill="white" opacity="0.7"/>
+        <circle cx="112" cy="58" r="4"   fill="white" opacity="0.65"/>
+      </>}
+      {/* ── 2단계: 왼쪽 찢어짐 + X 스크래치 */}
+      {stage >= 2 && <>
+        <path d="M30,90 L44,78 L34,68 L48,56" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" opacity="0.9"/>
+        <circle cx="26" cy="88" r="5.5" fill="white" opacity="0.75"/>
+        <circle cx="30" cy="98" r="4"   fill="white" opacity="0.65"/>
+        <line x1="98" y1="106" x2="116" y2="126" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.75"/>
+        <line x1="116" y1="106" x2="98" y2="126" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.75"/>
+      </>}
+      {/* ── 3단계: 아래 찢어짐 + 반창고 */}
+      {stage >= 3 && <>
+        <path d="M52,130 L64,118 L74,128 L86,116 L96,128" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" opacity="0.95"/>
+        <circle cx="54" cy="132" r="5"   fill="white" opacity="0.75"/>
+        <circle cx="74" cy="134" r="6"   fill="white" opacity="0.7"/>
+        <circle cx="94" cy="132" r="4.5" fill="white" opacity="0.65"/>
+        <rect x="50" y="52" width="30" height="12" rx="4" fill="#FBBF24" opacity="0.95"/>
+        <rect x="60" y="49" width="10" height="18" rx="3" fill="#F59E0B"/>
+      </>}
+      {/* ── 4단계: 상단 왼쪽도 터짐 + 솜 폭발 */}
+      {stage >= 4 && <>
+        <path d="M34,46 L48,36 L42,52 L56,42" fill="none" stroke="white" strokeWidth="4.5" strokeLinecap="round" opacity="0.95"/>
+        <circle cx="30" cy="50" r="6"   fill="white" opacity="0.8"/>
+        <circle cx="38" cy="38" r="4.5" fill="white" opacity="0.7"/>
+        <circle cx="52" cy="132" r="7"  fill="white" opacity="0.7"/>
+        <circle cx="114" cy="40" r="5"  fill="white" opacity="0.65"/>
+        <line x1="88" y1="46" x2="106" y2="36" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.85"/>
+      </>}
+
       {/* corner tufts */}
       <circle cx="38" cy="48" r="7" fill="white" opacity="0.3"/>
       <circle cx="122" cy="48" r="7" fill="white" opacity="0.3"/>
@@ -742,15 +832,10 @@ function CushionSVG({ expr='normal', stage=0 }) {
       <circle cx="122" cy="118" r="7" fill="white" opacity="0.3"/>
       {/* center button */}
       <circle cx="80" cy="82" r="14" fill="white" opacity="0.25"/>
-      <circle cx="80" cy="82" r="8" fill="white" opacity="0.4"/>
+      <circle cx="80" cy="82" r="8"  fill="white" opacity="0.4"/>
       {/* face */}
       <Eyes expr={expr} cx1={62} cy1={74} cx2={98} cy2={74} r={6}/>
       <Mouth expr={expr} mx={80} my={88}/>
-      {stage >= 1 && <path d="M30,55 Q40,48 35,62" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>}
-      {stage >= 2 && <path d="M125,110 Q115,103 120,117" fill="none" stroke="white" strokeWidth="2" opacity="0.6"/>}
-      {stage >= 3 && <line x1="50" y1="120" x2="60" y2="130" stroke="white" strokeWidth="2" opacity="0.5"/>}
-      {stage >= 4 && <><line x1="95" y1="40" x2="108" y2="32" stroke="white" strokeWidth="2.5" opacity="0.7"/>
-        <line x1="25" y1="90" x2="18" y2="100" stroke="white" strokeWidth="2" opacity="0.5"/></>}
     </svg>
   );
 }
@@ -759,9 +844,17 @@ function CushionSVG({ expr='normal', stage=0 }) {
 function AlienSVG({ expr='normal', stage=0 }) {
   return (
     <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
-      {/* antenna */}
-      <line x1="80" y1="20" x2="68" y2="8" stroke="#6BCB77" strokeWidth="4" strokeLinecap="round"/>
-      <circle cx="64" cy="5" r="6" fill="#FFD93D" stroke="#6BCB77" strokeWidth="2"/>
+      {/* antenna — stage2+: 꺾임 */}
+      {stage < 2
+        ? <>
+            <line x1="80" y1="20" x2="68" y2="8" stroke="#6BCB77" strokeWidth="4" strokeLinecap="round"/>
+            <circle cx="64" cy="5" r="6" fill="#FFD93D" stroke="#6BCB77" strokeWidth="2"/>
+          </>
+        : <>
+            <path d="M80,20 L74,14 L62,20" fill="none" stroke="#6BCB77" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+            <circle cx="58" cy="20" r="5" fill="#FFD93D" stroke="#6BCB77" strokeWidth="2" opacity="0.75"/>
+          </>
+      }
       {/* head */}
       <ellipse cx="80" cy="85" rx="50" ry="60" fill="#6BCB77"/>
       {/* big eyes */}
@@ -782,14 +875,15 @@ function AlienSVG({ expr='normal', stage=0 }) {
       {/* spots */}
       <circle cx="52" cy="98" r="5" fill="#4CAF50" opacity="0.5"/>
       <circle cx="108" cy="95" r="5" fill="#4CAF50" opacity="0.5"/>
-      <DamageScars stage={stage} color="#2D7A2D"/>
+      <DamageScars stage={stage}/>
     </svg>
   );
 }
 
 // ── 샌드백
 function SandbagSVG({ expr='normal', stage=0 }) {
-  const tilt = stage >= 2 ? `rotate(${stage*4-4},80,80)` : '';
+  const tiltDeg = [0, 5, 10, 16, 24][Math.min(stage, 4)];
+  const tilt = tiltDeg > 0 ? `rotate(${tiltDeg},80,95)` : '';
   return (
     <svg viewBox="0 0 160 160" xmlns="http://www.w3.org/2000/svg">
       {/* chain */}
@@ -799,12 +893,41 @@ function SandbagSVG({ expr='normal', stage=0 }) {
         {/* bag body */}
         <rect x="35" y="28" width="90" height="108" rx="18" fill="#D4956A"/>
         {/* texture stripes */}
-        <rect x="35" y="50" width="90" height="6" fill="#C07A50" rx="2"/>
-        <rect x="35" y="78" width="90" height="6" fill="#C07A50" rx="2"/>
+        <rect x="35" y="50"  width="90" height="6" fill="#C07A50" rx="2"/>
+        <rect x="35" y="78"  width="90" height="6" fill="#C07A50" rx="2"/>
         <rect x="35" y="106" width="90" height="6" fill="#C07A50" rx="2"/>
         {/* top/bottom caps */}
-        <rect x="35" y="28" width="90" height="20" rx="18" fill="#BA7040"/>
+        <rect x="35" y="28"  width="90" height="20" rx="18" fill="#BA7040"/>
         <rect x="35" y="116" width="90" height="20" rx="10" fill="#BA7040"/>
+
+        {/* ── 1단계: 뚜렷한 빨간 X */}
+        {stage >= 1 && <>
+          <line x1="98"  y1="56" x2="116" y2="74" stroke="#FF1A1A" strokeWidth="5.5" strokeLinecap="round" opacity="0.92"/>
+          <line x1="116" y1="56" x2="98"  y2="74" stroke="#FF1A1A" strokeWidth="5.5" strokeLinecap="round" opacity="0.92"/>
+        </>}
+        {/* ── 2단계: 가죽 찢어짐 + 모래 새어나옴 */}
+        {stage >= 2 && <>
+          <path d="M38,86 L50,76 L42,68 L54,58" fill="none" stroke="#FF1A1A" strokeWidth="4.5" strokeLinecap="round" opacity="0.85"/>
+          <ellipse cx="36" cy="90"  rx="7"  ry="4.5" fill="#E8C89A" opacity="0.85"/>
+          <ellipse cx="32" cy="100" rx="5.5" ry="3.5" fill="#E8C89A" opacity="0.7"/>
+        </>}
+        {/* ── 3단계: 반창고 + 추가 상처 */}
+        {stage >= 3 && <>
+          <rect x="58" y="110" width="32" height="13" rx="4" fill="#FBBF24"/>
+          <rect x="68" y="107" width="12" height="19" rx="3" fill="#F59E0B"/>
+          <line x1="50" y1="110" x2="60"  y2="130" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.85"/>
+          <ellipse cx="114" cy="110" rx="13" ry="8" fill="#8B2FC9" opacity="0.45"/>
+        </>}
+        {/* ── 4단계: 터진 구멍 + 모래 쏟아짐 */}
+        {stage >= 4 && <>
+          <ellipse cx="110" cy="88" rx="12" ry="9" fill="#BA7040"/>
+          <ellipse cx="110" cy="88" rx="8"  ry="6" fill="#C8906A"/>
+          <ellipse cx="116" cy="96" rx="6"  ry="4" fill="#E8C89A" opacity="0.9"/>
+          <ellipse cx="122" cy="104" rx="4.5" ry="3" fill="#E8C89A" opacity="0.75"/>
+          <ellipse cx="118" cy="112" rx="3.5" ry="2.5" fill="#E8C89A" opacity="0.6"/>
+          <line x1="44" y1="116" x2="36" y2="132" stroke="#FF1A1A" strokeWidth="5" strokeLinecap="round" opacity="0.85"/>
+        </>}
+
         {/* face */}
         <Eyes expr={expr} cx1={63} cy1={74} cx2={97} cy2={74} r={7}/>
         <Mouth expr={expr} mx={80} my={92}/>
@@ -812,14 +935,6 @@ function SandbagSVG({ expr='normal', stage=0 }) {
           <circle cx="50" cy="82" r="8" fill="#FFAA66" opacity="0.4"/>
           <circle cx="110" cy="82" r="8" fill="#FFAA66" opacity="0.4"/>
         </>}
-        {/* damage */}
-        {stage >= 1 && <line x1="100" y1="58" x2="114" y2="70" stroke="#8B5A2B" strokeWidth="3" strokeLinecap="round" opacity="0.8"/>}
-        {stage >= 2 && <path d="M40,90 L48,98 L40,106" fill="none" stroke="#8B5A2B" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>}
-        {stage >= 3 && <><line x1="85" y1="112" x2="95" y2="128" stroke="#8B5A2B" strokeWidth="3" opacity="0.7"/>
-          <line x1="55" y1="115" x2="48" y2="128" stroke="#8B5A2B" strokeWidth="2.5" opacity="0.6"/></>}
-        {stage >= 4 && <><line x1="115" y1="90" x2="128" y2="82" stroke="#8B5A2B" strokeWidth="3" opacity="0.8"/>
-          <path d="M70,42 L76,32 L82,42" fill="none" stroke="#8B5A2B" strokeWidth="2.5" strokeLinecap="round" opacity="0.7"/>
-          <circle cx="60" cy="60" r="5" fill="none" stroke="#8B5A2B" strokeWidth="2" opacity="0.6"/></>}
       </g>
     </svg>
   );
@@ -1039,8 +1154,10 @@ function App() {
   const [healOffset, setHealOffset] = useState(0); // 회복으로 낮춘 스테이지 오프셋
   const [exprIdx, setExprIdx]       = useState(0);
   const [particles, setParticles]   = useState([]);
-  const [isHit, setIsHit]           = useState(false);
-  const [isHealing, setIsHealing]   = useState(false);
+  const [isHit, setIsHit]             = useState(false);
+  const [showHitFlash, setShowHitFlash] = useState(false);
+  const [screenShake, setScreenShake]   = useState(false);
+  const [isHealing, setIsHealing]     = useState(false);
   const [healBloom, setHealBloom]   = useState(null); // { color, key }
   const [healPanelOpen, setHealPanelOpen] = useState(false);
   const [shareOpen, setShareOpen]         = useState(false);
@@ -1104,7 +1221,12 @@ function App() {
 
     if (hitTimer.current) clearTimeout(hitTimer.current);
     setIsHit(true);
-    hitTimer.current = setTimeout(() => setIsHit(false), 350);
+    setShowHitFlash(true);
+    if (stage >= 3) {
+      setScreenShake(true);
+      setTimeout(() => setScreenShake(false), 320);
+    }
+    hitTimer.current = setTimeout(() => { setIsHit(false); setShowHitFlash(false); }, 350);
   }, [healPanelOpen]);
 
   const handleHeal = useCallback((action) => {
@@ -1257,7 +1379,7 @@ function App() {
   const currentExpr = isHealing ? 'normal' : EXPRESSIONS[exprIdx];
 
   return (
-    <div className="screen game-screen">
+    <div className={`screen game-screen ${screenShake ? 'screen-shake' : ''}`}>
       <div className="game-header">
         <div className="game-nickname">📍 {displayName}</div>
         <div className="game-stage-badge">{STAGE_LABELS[stage]}</div>
@@ -1268,17 +1390,21 @@ function App() {
           className={`counter-number ${isHealing ? 'counter-heal' : ''}`}
           key={count}
         >{count.toLocaleString()}</div>
-        <div className="counter-label">번 꾹 남음</div>
+        <div className="counter-label">번 꾹</div>
       </div>
 
       {/* stage indicator dots */}
       <div className="char-stage-bar">
-        {[0,1,2,3,4].map(i => (
-          <div
-            key={i}
-            className={`stage-dot ${i <= stage ? 'active' : ''} ${isHealing && i > stage ? 'healed' : ''}`}
-          />
-        ))}
+        {[0,1,2,3,4].map(i => {
+          const stageColors = ['s1','s2','s2','s3','s4'];
+          const activeClass = i <= stage ? stageColors[stage] : '';
+          return (
+            <div
+              key={i}
+              className={`stage-dot ${activeClass} ${isHealing && i > stage ? 'healed' : ''}`}
+            />
+          );
+        })}
       </div>
 
       {/* character tap area */}
@@ -1289,6 +1415,9 @@ function App() {
         style={{ flex: 1, paddingTop: 8, position: 'relative' }}
       >
         {CharComponent && <CharComponent expr={currentExpr} stage={stage}/>}
+
+        {/* 타격 빨간 플래시 */}
+        {showHitFlash && <div className="hit-flash" key={count}/>}
 
         {/* bloom overlay */}
         {healBloom && (
