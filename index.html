@@ -461,6 +461,130 @@
     }
     .game-share-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #e08c20; }
 
+    /* ── CALENDAR ── */
+    .cal-sheet {
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-radius: 28px 28px 0 0;
+      padding: 20px 16px 40px;
+      box-shadow: 0 -8px 40px rgba(0,0,0,0.13);
+      z-index: 40;
+      transform: translateY(100%);
+      transition: transform 0.38s cubic-bezier(0.34,1.45,0.64,1);
+      max-height: 92dvh;
+      overflow-y: auto;
+    }
+    .cal-sheet.open { transform: translateY(0); }
+    .cal-title {
+      text-align: center;
+      font-size: 1.2rem;
+      color: var(--dark);
+      margin-bottom: 14px;
+    }
+    .cal-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 16px;
+    }
+    .cal-stat-chip {
+      background: #FFF8F0;
+      border: 1.5px solid #FFE0C8;
+      border-radius: 14px;
+      padding: 9px 14px;
+      font-size: 0.88rem;
+      color: var(--dark);
+      text-align: center;
+      line-height: 1.4;
+    }
+    .cal-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+    .cal-nav-btn {
+      background: #f5f5f5;
+      border: none;
+      font-size: 0.9rem;
+      cursor: pointer;
+      color: #888;
+      padding: 6px 14px;
+      border-radius: 10px;
+      font-family: 'Jua', sans-serif;
+    }
+    .cal-nav-btn:disabled { opacity: 0.25; cursor: default; }
+    .cal-month-label { font-size: 1rem; color: var(--dark); }
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 4px;
+      margin-bottom: 16px;
+    }
+    .cal-dow {
+      text-align: center;
+      font-size: 0.72rem;
+      color: #ccc;
+      padding: 4px 0 6px;
+      font-family: 'Noto Sans KR', sans-serif;
+    }
+    .cal-dow:first-child { color: #FFB3B3; }
+    .cal-dow:last-child  { color: #B3C8FF; }
+    .cal-cell {
+      aspect-ratio: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      gap: 1px;
+    }
+    .cal-day-num {
+      font-size: 0.8rem;
+      color: #888;
+      line-height: 1;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 400;
+    }
+    .cal-cnt {
+      font-size: 0.6rem;
+      line-height: 1;
+      font-family: 'Noto Sans KR', sans-serif;
+      font-weight: 700;
+    }
+    /* 꾹 강도 */
+    .g1 { background: #FFE8E8; }
+    .g1 .cal-day-num { color: #FF6B6B; }
+    .g1 .cal-cnt     { color: #FF6B6B; }
+    .g2 { background: #FFB3B3; }
+    .g2 .cal-day-num { color: #e03333; }
+    .g2 .cal-cnt     { color: #e03333; }
+    .g3 { background: #FF6B6B; }
+    .g3 .cal-day-num,
+    .g3 .cal-cnt     { color: white; }
+    .g4 { background: #C0392B; }
+    .g4 .cal-day-num,
+    .g4 .cal-cnt     { color: white; }
+    /* 오늘 테두리 */
+    .cal-cell.cal-today { outline: 2.5px solid var(--primary); outline-offset: 1px; }
+    /* 달력 열기 버튼 */
+    .cal-open-btn {
+      margin-top: 8px;
+      padding: 10px 22px;
+      background: #FFF0E0;
+      border: 2px solid #FFD9B3;
+      color: #C07030;
+      font-family: 'Jua', sans-serif;
+      font-size: 0.92rem;
+      border-radius: 40px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: transform 0.1s;
+    }
+    .cal-open-btn:active { transform: scale(0.95); }
+
     /* ── DAMAGE OVERLAY EFFECTS ── */
     .damage-marks {
       position: absolute;
@@ -942,6 +1066,7 @@ const MESSAGES = [
   [10,  '10번! 진짜로요? 😂'],
   [20,  '이제 멈춰요 😭'],
   [30,  '30번... 미쳤다 🤯'],
+  [25,  '25번... 오늘 진짜 힘들었구나 🫂'],
   [50,  '50번 달성! 🏆'],
   [77,  '럭키 77! 🍀'],
   [100, '100번!! 전설 등극 👑'],
@@ -998,6 +1123,114 @@ const HEAL_ACTIONS = [
     toastMsg: (name) => `${name} 완전 회복! 미안했어 💚`,
   },
 ];
+
+/* ═══════════════════════════════════════════
+   CALENDAR / LOCALSTORAGE
+═══════════════════════════════════════════ */
+const CAL_KEY = 'gguk-daily';
+const DOW_KO  = ['일','월','화','수','목','금','토'];
+
+function todayKey() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+}
+function loadDaily() {
+  try { return JSON.parse(localStorage.getItem(CAL_KEY) || '{}'); } catch(e) { return {}; }
+}
+function bumpToday() {
+  const data = loadDaily();
+  const k = todayKey();
+  data[k] = (data[k] || 0) + 1;
+  try { localStorage.setItem(CAL_KEY, JSON.stringify(data)); } catch(e) {}
+}
+
+function CalendarView({ data, onClose }) {
+  const [viewDate, setViewDate] = useState(() => new Date());
+  const year = viewDate.getFullYear();
+  const mon  = viewDate.getMonth();
+  const now  = new Date();
+  const tKey = todayKey();
+  const isCurMonth = year === now.getFullYear() && mon === now.getMonth();
+
+  // 이번 주 합계 (월~오늘)
+  const weekStart = new Date(now);
+  weekStart.setDate(now.getDate() - (now.getDay() === 0 ? 6 : now.getDay() - 1));
+  weekStart.setHours(0,0,0,0);
+  let weekTotal = 0, monthMax = 0, monthMaxKey = null, monthTotal = 0;
+  Object.entries(data).forEach(([k, v]) => {
+    const d = new Date(k + 'T00:00:00');
+    if (d >= weekStart && d <= now) weekTotal += v;
+    if (d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth()) {
+      monthTotal += v;
+      if (v > monthMax) { monthMax = v; monthMaxKey = k; }
+    }
+  });
+  const maxLabel = monthMaxKey ? (() => {
+    const d = new Date(monthMaxKey + 'T00:00:00');
+    return `${d.getMonth()+1}/${d.getDate()} (${DOW_KO[d.getDay()]}) — ${monthMax}번`;
+  })() : null;
+
+  // 달력 셀 생성
+  const firstDow  = new Date(year, mon, 1).getDay();
+  const daysInMon = new Date(year, mon+1, 0).getDate();
+  const cells = [
+    ...Array(firstDow).fill(null),
+    ...Array.from({ length: daysInMon }, (_, i) => {
+      const d   = i + 1;
+      const key = `${year}-${String(mon+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+      return { d, key, count: data[key] || 0 };
+    }),
+  ];
+
+  function intensity(n) {
+    if (n === 0)  return '';
+    if (n < 10)   return 'g1';
+    if (n < 30)   return 'g2';
+    if (n < 60)   return 'g3';
+    return 'g4';
+  }
+
+  return (
+    <div className="cal-sheet open">
+      <div className="heal-panel-handle"/>
+      <div className="cal-title">🗓 꾹 달력</div>
+
+      {isCurMonth && (
+        <div className="cal-stats">
+          {weekTotal > 0
+            ? <div className="cal-stat-chip">이번 주 총 <b>{weekTotal}번</b> 꾹 💪</div>
+            : <div className="cal-stat-chip">이번 주는 아직 평화로워 🌿</div>}
+          {maxLabel
+            ? <div className="cal-stat-chip">이번 달 최다 꾹의 날 👑 <b>{maxLabel}</b></div>
+            : null}
+          {monthTotal > 0
+            ? <div className="cal-stat-chip">이번 달 누적 <b>{monthTotal}번</b> 꾹 🥊</div>
+            : <div className="cal-stat-chip">기록이 없어요 🌱 오늘 한 번 꾹해볼까요?</div>}
+        </div>
+      )}
+
+      <div className="cal-nav">
+        <button className="cal-nav-btn" onClick={() => setViewDate(new Date(year, mon-1, 1))}>◀</button>
+        <span className="cal-month-label">{year}년 {mon+1}월</span>
+        <button className="cal-nav-btn" disabled={isCurMonth} onClick={() => setViewDate(new Date(year, mon+1, 1))}>▶</button>
+      </div>
+
+      <div className="cal-grid">
+        {DOW_KO.map(d => <div key={d} className="cal-dow">{d}</div>)}
+        {cells.map((cell, i) => (
+          <div key={i} className={`cal-cell ${cell ? intensity(cell.count) : ''} ${cell?.key === tKey ? 'cal-today' : ''}`}>
+            {cell && <>
+              <span className="cal-day-num">{cell.d}</span>
+              {cell.count > 0 && <span className="cal-cnt">{cell.count}</span>}
+            </>}
+          </div>
+        ))}
+      </div>
+
+      <button className="share-close" onClick={onClose}>닫기</button>
+    </div>
+  );
+}
 
 /* ═══════════════════════════════════════════
    SHARE HELPERS
@@ -1148,6 +1381,8 @@ function App() {
   const [shareOpen, setShareOpen]         = useState(false);
   const [shareDataUrl, setShareDataUrl]   = useState(null);
   const [shareLoading, setShareLoading]   = useState(false);
+  const [calOpen, setCalOpen]             = useState(false);
+  const [calData, setCalData]             = useState({});
   const [toast, setToast]           = useState(null);
   const toastTimer    = useRef(null);
   const hitTimer      = useRef(null);
@@ -1190,6 +1425,7 @@ function App() {
 
     setCount(c => c + 1);
     setExprIdx(i => (i + 1) % EXPRESSIONS.length);
+    bumpToday();
 
     // 먼지 2~3개 + 이모지 0~1개
     const numDust = 2 + Math.floor(Math.random() * 2);
@@ -1313,7 +1549,7 @@ function App() {
   /* ── SCREEN 1: SELECT ── */
   if (screen === 'select') return (
     <div className="screen">
-      <div className="select-tagline">한 판 크게 붇고 싶은데 차마 붙을 용기는 나지 않을 때,</div>
+      <div className="select-tagline">한 판 크게 붙고 싶은데 차마 붙을 용기는 나지 않을 때,</div>
       <div className="select-title">GGUK 꾹</div>
       <div className="select-subtitle">오늘의 스파링 상대를 골라줘 👊</div>
       <div className="char-grid">
@@ -1454,9 +1690,17 @@ function App() {
 
       <div className="game-bottom">
         <div className="tap-hint">탭 해서 꾹꾹 눌러줘 👇</div>
-        <button className="game-share-btn" onClick={handleOpenShare}>
-          📤 공유하기
-        </button>
+        <div style={{display:'flex', gap:10, width:'100%', justifyContent:'center'}}>
+          <button className="game-share-btn" onClick={handleOpenShare}>
+            📤 공유하기
+          </button>
+          <button
+            className="cal-open-btn"
+            onClick={() => { setCalData(loadDaily()); setCalOpen(true); }}
+          >
+            🗓 달력
+          </button>
+        </div>
         <button
           onClick={() => { setCount(0); setHealOffset(0); setExprIdx(0); setScreen('select'); }}
           style={{marginTop:8, background:'none', border:'2px solid #eee', color:'#bbb',
@@ -1474,9 +1718,12 @@ function App() {
       </div>
 
       {/* dim overlay */}
-      {(healPanelOpen || shareOpen) && (
-        <div className="heal-overlay" onClick={() => { setHealPanelOpen(false); setShareOpen(false); }}/>
+      {(healPanelOpen || shareOpen || calOpen) && (
+        <div className="heal-overlay" onClick={() => { setHealPanelOpen(false); setShareOpen(false); setCalOpen(false); }}/>
       )}
+
+      {/* 달력 시트 */}
+      {calOpen && <CalendarView data={calData} onClose={() => setCalOpen(false)}/>}
 
       {/* ── 공유 시트 ── */}
       <div className={`share-sheet ${shareOpen ? 'open' : ''}`}>
